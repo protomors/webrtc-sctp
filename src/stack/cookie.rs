@@ -5,6 +5,7 @@
 use blake2::crypto_mac::Mac;
 use blake2::Blake2b;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+use digest::generic_array::{typenum::U64, GenericArray};
 use rand::{self, RngCore};
 use std::io;
 use std::io::{Cursor, Read, Write};
@@ -35,19 +36,21 @@ pub struct Secret {
 }
 
 struct SecretInner {
-    key: [u8; BLAKE2B_MAC_SIZE],
-    previous_key: [u8; BLAKE2B_MAC_SIZE],
+    key: Blake2bMac,
+    previous_key: Blake2bMac,
     generation_time: u64,
     expiration_time: u64,
     has_previous: bool,
 }
 
+// TODO: Convert fully to typenum
 const BLAKE2B_MAC_SIZE: usize = 64;
+type Blake2bMac = GenericArray<u8, U64>;
 
 impl Secret {
     pub fn new() -> Secret {
-        let mut key = [0u8; BLAKE2B_MAC_SIZE];
-        let previous_key = [0u8; BLAKE2B_MAC_SIZE];
+        let mut key = GenericArray::default();
+        let previous_key = GenericArray::default();
         rand::thread_rng().fill_bytes(&mut key);
 
         let generation_time = SystemTime::now()
@@ -92,24 +95,20 @@ impl Secret {
         }
     }
 
-    fn mac(&self, buffer: &[u8]) -> [u8; BLAKE2B_MAC_SIZE] {
+    fn mac(&self, buffer: &[u8]) -> Blake2bMac {
         self.regenerate_if_needed();
 
         let inner = self.inner.lock().unwrap();
-        let mut hasher = Blake2b::new(&inner.key).unwrap();
+        let mut hasher = Blake2b::new(&inner.key);
         hasher.input(buffer);
-        let mut mac = [0u8; BLAKE2B_MAC_SIZE];
+        let mut mac = GenericArray::default();
         let code = hasher.result().code();
         mac.clone_from_slice(code.as_slice());
         mac
     }
 
-    fn verify(&self, buffer: &[u8], mac: &[u8], timestamp: u64) -> io::Result<()> {
+    fn verify(&self, buffer: &[u8], mac: &Blake2bMac, timestamp: u64) -> io::Result<()> {
         self.regenerate_if_needed();
-
-        if mac.len() != BLAKE2B_MAC_SIZE {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "bad MAC"));
-        }
 
         let inner = self.inner.lock().unwrap();
         let key = if timestamp < inner.generation_time {
@@ -117,9 +116,9 @@ impl Secret {
         } else {
             &inner.key
         };
-        let mut hasher = Blake2b::new(key).unwrap();
+        let mut hasher = Blake2b::new(key);
         hasher.input(buffer);
-        match hasher.verify(mac) {
+        match hasher.verify(&mac) {
             Ok(_) => Ok(()),
             Err(_) => Err(io::Error::new(io::ErrorKind::InvalidData, "bad MAC")),
         }
@@ -264,7 +263,11 @@ impl Cookie {
         cursor.read_exact(&mut mac)?;
         let timestamp = cursor.read_u64::<BigEndian>()?;
 
-        secret.verify(&buffer[BLAKE2B_MAC_SIZE..], &mac, timestamp)?;
+        secret.verify(
+            &buffer[BLAKE2B_MAC_SIZE..],
+            Blake2bMac::from_slice(&mac),
+            timestamp,
+        )?;
 
         let local_port = cursor.read_u16::<BigEndian>()?;
         let sctp_peer = Self::deserialize_sockaddr(&mut cursor)?;
