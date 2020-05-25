@@ -18,11 +18,6 @@ use super::settings::DEFAULT_SCTP_PARAMETERS;
 use crate::packet::TSN;
 use crate::util;
 
-#[derive(Clone)]
-struct CookieTime {
-    epoch: u64,
-}
-
 /// The Secret struct contains a secret key to be used for generating HMACs, and provides functions
 /// for basic MAC generation and verification.  A Secret is cloneable and maintains a shared inner
 /// state so all holders of a cloned Secret will access the same key.  The secret may (and should)
