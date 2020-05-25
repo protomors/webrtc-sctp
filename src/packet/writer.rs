@@ -32,7 +32,7 @@ pub trait Writer {
     fn mtu(&self) -> usize;
     fn push_tlv(&mut self, position: usize);
     fn pop_tlv(&mut self) -> Option<usize>;
-    fn write_chunk(&mut self, chunk_writer: &ChunkWriter) -> Result<()>;
+    fn write_chunk(&mut self, chunk_writer: &dyn ChunkWriter) -> Result<()>;
     fn write_parameter(&mut self, parameter: &Parameter) -> Result<()>;
     fn write_error_cause(&mut self, error_cause: &ErrorCause) -> Result<()>;
     fn bytes(&mut self) -> Result<&[u8]>;
@@ -144,7 +144,7 @@ impl Writer for WriterOwned {
     fn pop_tlv(&mut self) -> Option<usize> {
         self.tlv_stack.pop()
     }
-    fn write_chunk(&mut self, chunk_writer: &ChunkWriter) -> Result<()> {
+    fn write_chunk(&mut self, chunk_writer: &dyn ChunkWriter) -> Result<()> {
         chunk_writer.write(self)
     }
     fn write_parameter(&mut self, parameter: &Parameter) -> Result<()> {

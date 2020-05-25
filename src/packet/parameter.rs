@@ -76,7 +76,7 @@ impl fmt::Display for IPv4Address {
 }
 impl fmt::Debug for IPv4Address {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        (self as &fmt::Display).fmt(f)
+        (self as &dyn fmt::Display).fmt(f)
     }
 }
 
@@ -107,7 +107,7 @@ impl fmt::Display for IPv6Address {
 }
 impl fmt::Debug for IPv6Address {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        (self as &fmt::Display).fmt(f)
+        (self as &dyn fmt::Display).fmt(f)
     }
 }
 
@@ -271,7 +271,7 @@ named!(pub parse_parameter<&[u8], Parameter>, do_parse!(
     parameter:  parse_tlv!(parameter_dispatch) >> ( parameter )
 ));
 
-pub fn write_parameter(writer: &mut Writer, parameter: &Parameter) -> WriterResult<()> {
+pub fn write_parameter(writer: &mut dyn Writer, parameter: &Parameter) -> WriterResult<()> {
     match parameter {
         &Parameter::HeartbeatInfo(ref v) => {
             writer.open_tlv(HEARTBEAT_INFO_TYPE)?;

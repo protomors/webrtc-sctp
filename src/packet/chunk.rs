@@ -32,7 +32,7 @@ const SHUTDOWNCOMPLETE_TYPE: u8 = 14;
 // uses that output channel as a destination for serializing chunks.  We
 // need to shore up the terminology here.
 pub trait ChunkWriter {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()>;
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()>;
 }
 
 #[derive(Clone, PartialEq)]
@@ -54,7 +54,7 @@ pub enum Chunk {
 }
 
 impl Chunk {
-    pub fn chunk_writer(&self) -> &ChunkWriter {
+    pub fn chunk_writer(&self) -> &dyn ChunkWriter {
         match self {
             &Chunk::Data(ref c) => c,
             &Chunk::Init(ref c) => c,
@@ -75,7 +75,7 @@ impl Chunk {
 }
 
 impl ChunkWriter for Chunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         self.chunk_writer().write(writer)
     }
 }
@@ -134,7 +134,7 @@ pub struct DataChunk {
 }
 
 impl ChunkWriter for DataChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         let mut flags: u8 = 0;
         if self.unordered {
             flags |= DATA_FLAG_UNORDERED;
@@ -211,7 +211,7 @@ pub struct InitChunk {
 }
 
 impl ChunkWriter for InitChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(INIT_TYPE, 0)?;
         writer.write_be32(self.initiate_tag)?;
         writer.write_be32(self.a_rwnd)?;
@@ -278,7 +278,7 @@ pub struct InitAckChunk {
 }
 
 impl ChunkWriter for InitAckChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(INITACK_TYPE, 0)?;
         writer.write_be32(self.initiate_tag)?;
         writer.write_be32(self.a_rwnd)?;
@@ -355,7 +355,7 @@ pub struct SackChunk {
 }
 
 impl ChunkWriter for SackChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(SACK_TYPE, 0)?;
         writer.write_be32(self.cumulative_tsn_ack.0)?;
         writer.write_be32(self.a_rwnd)?;
@@ -420,7 +420,7 @@ pub struct HeartbeatChunk {
 }
 
 impl ChunkWriter for HeartbeatChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(HEARTBEAT_TYPE, 0)?;
         writer.write_parameter(&self.parameter)?;
         writer.close_tlv()?;
@@ -452,7 +452,7 @@ pub struct HeartbeatAckChunk {
 }
 
 impl ChunkWriter for HeartbeatAckChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(HEARTBEATACK_TYPE, 0)?;
         writer.write_parameter(&self.parameter)?;
         writer.close_tlv()?;
@@ -487,7 +487,7 @@ pub struct AbortChunk {
 }
 
 impl ChunkWriter for AbortChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         let flags = if self.verification_tag_reflected {
             1
         } else {
@@ -536,7 +536,7 @@ pub struct ShutdownChunk {
 }
 
 impl ChunkWriter for ShutdownChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(SHUTDOWN_TYPE, 0)?;
         writer.write_be32(self.cumulative_tsn_ack.0)?;
         writer.close_tlv()?;
@@ -566,7 +566,7 @@ chunk!(
 pub struct ShutdownAckChunk {}
 
 impl ChunkWriter for ShutdownAckChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(SHUTDOWNACK_TYPE, 0)?;
         writer.close_tlv()?;
         Ok(())
@@ -592,7 +592,7 @@ pub struct ErrorChunk {
 }
 
 impl ChunkWriter for ErrorChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(ERROR_TYPE, 0)?;
         for error_cause in &self.error_causes {
             writer.write_error_cause(error_cause)?;
@@ -627,7 +627,7 @@ pub struct CookieEchoChunk {
 }
 
 impl ChunkWriter for CookieEchoChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(COOKIEECHO_TYPE, 0)?;
         writer.write_bytes(&self.cookie)?;
         writer.close_tlv()?;
@@ -664,7 +664,7 @@ chunk!(
 pub struct CookieAckChunk {}
 
 impl ChunkWriter for CookieAckChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(COOKIEACK_TYPE, 0)?;
         writer.close_tlv()?;
         Ok(())
@@ -692,7 +692,7 @@ pub struct ShutdownCompleteChunk {
 }
 
 impl ChunkWriter for ShutdownCompleteChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         let flags: u8 = if self.verification_tag_reflected {
             SHUTDOWN_COMPLETE_FLAG_VERIFICATION_TAG_REFLECTED
         } else {
@@ -736,7 +736,7 @@ pub struct UnknownChunk {
 }
 
 impl ChunkWriter for UnknownChunk {
-    fn write(&self, writer: &mut Writer) -> WriterResult<()> {
+    fn write(&self, writer: &mut dyn Writer) -> WriterResult<()> {
         writer.open_tlv_chunk(self.chunk_type, self.chunk_flags)?;
         writer.write_bytes(&self.data)?;
         writer.close_tlv()?;

@@ -42,7 +42,7 @@ pub fn packet_to_lower_layer(packet: &Packet) -> LowerLayerPacket {
 pub trait LowerLayerProtocol: Stream + Sink {
     fn address(&self) -> SocketAddr;
 }
-pub type LowerLayer = LowerLayerProtocol<
+pub type LowerLayer = dyn LowerLayerProtocol<
     Item = LowerLayerPacket,
     Error = io::Error,
     SinkItem = LowerLayerPacket,

@@ -50,7 +50,7 @@ impl fmt::Display for SctpPacket {
 
 impl fmt::Debug for SctpPacket {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        (self as &fmt::Display).fmt(f)
+        (self as &dyn fmt::Display).fmt(f)
     }
 }
 

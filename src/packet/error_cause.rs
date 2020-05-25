@@ -225,7 +225,7 @@ named!(pub parse_error_cause<&[u8], ErrorCause>, do_parse!(
     error_cause:  parse_tlv!(error_cause_dispatch) >> ( error_cause )
 ));
 
-pub fn write_error_cause(writer: &mut Writer, error_cause: &ErrorCause) -> WriterResult<()> {
+pub fn write_error_cause(writer: &mut dyn Writer, error_cause: &ErrorCause) -> WriterResult<()> {
     match error_cause {
         &ErrorCause::InvalidStreamIdentifier(stream_id) => {
             writer.open_tlv(INVALID_STREAM_IDENTIFIER_TYPE)?;

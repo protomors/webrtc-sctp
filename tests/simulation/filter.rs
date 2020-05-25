@@ -6,7 +6,7 @@ pub trait Filter: Stream<Item = FlyingPacket, Error = ()> + Send {
     fn set_incoming_stream(&mut self, stream: PacketStream);
 }
 
-pub type FilterBox = Box<Filter<Item = FlyingPacket, Error = ()> + Send>;
+pub type FilterBox = Box<dyn Filter<Item = FlyingPacket, Error = ()> + Send>;
 
 /*
  *

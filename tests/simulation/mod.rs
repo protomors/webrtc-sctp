@@ -63,7 +63,7 @@ pub struct FlyingPacket {
     pub llp: LowerLayerPacket,
 }
 
-pub type PacketStream = Box<Stream<Item = FlyingPacket, Error = ()> + Send>;
+pub type PacketStream = Box<dyn Stream<Item = FlyingPacket, Error = ()> + Send>;
 
 impl FlyingPacket {
     #[allow(unused)]
