@@ -36,6 +36,9 @@ fn padding(length: usize) -> Vec<u8> {
 }
 
 fn main() {
+    if let Err(_) = ::std::env::var("RUST_LOG") {
+        ::std::env::set_var("RUST_LOG", "webrtc_sctp=trace");
+    }
     env_logger::init();
     let (tx, rx) = std::sync::mpsc::channel::<SctpHandle>();
 
