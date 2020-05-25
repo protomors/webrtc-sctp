@@ -4,12 +4,12 @@ use std::fmt;
 
 use nom::{be_u16, be_u32, rest, IResult};
 
-use packet::error_cause::*;
-use packet::parameter::{parse_parameter, Parameter};
-use packet::writer::{Result as WriterResult, Writer};
-use packet::{SSN, TSN};
-use util::buffer::Buffer;
-use util::{hexdump, shorthash};
+use crate::packet::error_cause::*;
+use crate::packet::parameter::{parse_parameter, Parameter};
+use crate::packet::writer::{Result as WriterResult, Writer};
+use crate::packet::{SSN, TSN};
+use crate::util::buffer::Buffer;
+use crate::util::{hexdump, shorthash};
 
 // Chunk types
 const DATA_TYPE: u8 = 0;
@@ -794,10 +794,10 @@ named!(pub parse_chunk<&[u8], Chunk >, do_parse!(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use packet::parameter;
-    use packet::writer::*;
-    use util::serial::Serial;
-    use util::tests::*;
+    use crate::packet::parameter;
+    use crate::packet::writer::*;
+    use crate::util::serial::Serial;
+    use crate::util::tests::*;
 
     /// How many trailing bytes cases should we test?
     const MAX_TRAILING_BYTES: usize = 5;

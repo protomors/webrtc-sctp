@@ -20,8 +20,8 @@ use std::net::SocketAddr;
 use std::thread;
 use std::time::Duration;
 
-use simulation::filter;
-use simulation::Simulation;
+use crate::simulation::filter;
+use crate::simulation::Simulation;
 use webrtc_sctp::error::{SctpError, SctpResult};
 use webrtc_sctp::stack::association::AssociationCommand;
 use webrtc_sctp::stack::sync::AssociationHandle;

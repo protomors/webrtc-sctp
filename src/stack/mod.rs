@@ -24,9 +24,9 @@ use self::association::*;
 use self::cookie::Secret;
 use self::lowerlayer::{packet_to_lower_layer, LowerLayer, UdpLowerLayer};
 use self::sync::SctpHandle;
-use error::SctpResult;
-use packet::chunk::Chunk;
-use packet::{self, SctpPacket};
+use crate::error::SctpResult;
+use crate::packet::chunk::Chunk;
+use crate::packet::{self, SctpPacket};
 
 pub struct Packet {
     pub sctp_packet: SctpPacket,

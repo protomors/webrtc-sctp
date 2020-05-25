@@ -13,8 +13,8 @@ use std::sync::{Arc, Mutex};
 use time;
 
 use super::settings::DEFAULT_SCTP_PARAMETERS;
-use packet::TSN;
-use util;
+use crate::packet::TSN;
+use crate::util;
 
 #[derive(Clone)]
 struct CookieTime {

@@ -5,8 +5,8 @@ use std::fmt;
 use nom::simple_errors::Context;
 use nom::{be_u16, be_u32, rest, Err, ErrorKind, IResult};
 
-use packet::writer::{Result as WriterResult, Writer};
-use util::{hexdump, shorthash};
+use crate::packet::writer::{Result as WriterResult, Writer};
+use crate::util::{hexdump, shorthash};
 
 // TODO: Padding of the last parameter is not included in the chunk length.
 // Also, padding should be optional. (?)
@@ -336,8 +336,8 @@ pub fn write_parameter(writer: &mut dyn Writer, parameter: &Parameter) -> Writer
 #[cfg(test)]
 mod tests {
     use super::*;
-    use packet::writer::*;
-    use util::tests::*;
+    use crate::packet::writer::*;
+    use crate::util::tests::*;
 
     /// How many trailing bytes cases should we test?
     const MAX_TRAILING_BYTES: usize = 5;

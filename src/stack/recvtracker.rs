@@ -2,9 +2,9 @@ use std::cmp::Ordering;
 use std::collections::BTreeSet;
 use std::fmt::{self, Debug, Formatter};
 
-use packet::chunk::{DataChunk, GapAckBlock, SackChunk};
-use packet::TSN;
-use util::buffer::BufferTracker;
+use crate::packet::chunk::{DataChunk, GapAckBlock, SackChunk};
+use crate::packet::TSN;
+use crate::util::buffer::BufferTracker;
 
 /// This tuple struct represents an range of TSNs and is inclusive on both the beginning and the
 /// end.  In other words, (20,22) includes TSNs 20, 21, and 22, and (30,30) represents a single TSN
@@ -234,7 +234,7 @@ impl Debug for RecvTracker {
 mod tests {
     use super::*;
     use rand;
-    use util::buffer::Buffer;
+    use crate::util::buffer::Buffer;
 
     const INPUT_SIZE: usize = 8192;
     const REORDER_CHANCE: u32 = 15;

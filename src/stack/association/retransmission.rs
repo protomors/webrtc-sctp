@@ -34,9 +34,9 @@ use std::time::{Duration, Instant};
 use tokio_timer;
 
 use super::Association;
-use packet::chunk::{Chunk, GapAckBlock};
-use packet::TSN;
-use stack::settings::DEFAULT_SCTP_PARAMETERS;
+use crate::packet::chunk::{Chunk, GapAckBlock};
+use crate::packet::TSN;
+use crate::stack::settings::DEFAULT_SCTP_PARAMETERS;
 
 /// The retransmission state that will be embedded in every association.
 pub struct State {

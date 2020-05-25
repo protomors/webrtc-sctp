@@ -9,12 +9,12 @@ use futures::sync::mpsc;
 use futures::sync::oneshot;
 use futures::{self, Future, Stream};
 
-use error::{SctpError, SctpResult};
-use packet::{SSN, TSN};
-use stack::association::{AcceptQueueReceiver, AssociationCommand, AssociationCommandSender};
-use stack::SctpCommand;
-use stack::Timeout;
-use UserMessage;
+use crate::error::{SctpError, SctpResult};
+use crate::packet::{SSN, TSN};
+use crate::stack::association::{AcceptQueueReceiver, AssociationCommand, AssociationCommandSender};
+use crate::stack::SctpCommand;
+use crate::stack::Timeout;
+use crate::UserMessage;
 
 #[derive(Clone, Debug)]
 pub struct SctpHandle {

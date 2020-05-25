@@ -3,10 +3,10 @@
 
 use std::fmt;
 
-use packet::chunk::ChunkWriter;
-use packet::error_cause::{write_error_cause, ErrorCause};
-use packet::parameter::{write_parameter, Parameter};
-use packet::SctpHeader;
+use crate::packet::chunk::ChunkWriter;
+use crate::packet::error_cause::{write_error_cause, ErrorCause};
+use crate::packet::parameter::{write_parameter, Parameter};
+use crate::packet::SctpHeader;
 
 const DEFAULT_MTU: usize = 1500;
 

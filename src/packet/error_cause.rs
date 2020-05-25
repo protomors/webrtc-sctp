@@ -4,9 +4,9 @@ use std::fmt;
 
 use nom::{be_u16, be_u32, rest, IResult};
 
-use packet::parameter::{parse_parameter, Parameter};
-use packet::writer::{Result as WriterResult, Writer};
-use util::hexdump;
+use crate::packet::parameter::{parse_parameter, Parameter};
+use crate::packet::writer::{Result as WriterResult, Writer};
+use crate::util::hexdump;
 
 // Error Cause types
 const INVALID_STREAM_IDENTIFIER_TYPE: u16 = 1;
@@ -309,9 +309,9 @@ pub fn write_error_cause(writer: &mut dyn Writer, error_cause: &ErrorCause) -> W
 #[cfg(test)]
 mod tests {
     use super::*;
-    use packet::parameter;
-    use packet::writer::*;
-    use util::tests::*;
+    use crate::packet::parameter;
+    use crate::packet::writer::*;
+    use crate::util::tests::*;
 
     /// How many trailing bytes cases should we test?
     const MAX_TRAILING_BYTES: usize = 5;

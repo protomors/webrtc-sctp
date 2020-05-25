@@ -8,6 +8,7 @@ keywords = ["webrtc", "sctp" ]
 categories = ["network-programming"]
 description = "A pure-Rust userspace SCTP implementation"
 readme = "README.md"
+edition = "2018"
 
 [lib]
 path = "src/lib.rs"

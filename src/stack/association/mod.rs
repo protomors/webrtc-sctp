@@ -12,26 +12,26 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::time::*;
 use tokio_timer;
 
-use error::{SctpError, SctpResult};
-use packet::chunk::{
+use crate::error::{SctpError, SctpResult};
+use crate::packet::chunk::{
     AbortChunk, Chunk, CookieAckChunk, CookieEchoChunk, DataChunk, HeartbeatAckChunk,
     HeartbeatChunk, InitAckChunk, InitChunk, SackChunk, ShutdownAckChunk, ShutdownChunk,
     ShutdownCompleteChunk,
 };
-use packet::error_cause::ErrorCause;
-use packet::parameter::Parameter;
-use packet::{SctpHeader, SctpPacket, SSN, TSN};
-use stack::association::retransmission::Retransmission;
-use stack::cookie::Cookie;
-use stack::queue::{OrderedDataQueue, OutgoingDataQueue, UnorderedDataQueue};
-use stack::recvtracker::RecvTracker;
-use stack::settings::DEFAULT_SCTP_PARAMETERS;
-use stack::Packet;
-use stack::StackResources;
-use stack::Timeout;
-use util::buffer::Buffer;
-use Message;
-use UserMessage;
+use crate::packet::error_cause::ErrorCause;
+use crate::packet::parameter::Parameter;
+use crate::packet::{SctpHeader, SctpPacket, SSN, TSN};
+use crate::stack::association::retransmission::Retransmission;
+use crate::stack::cookie::Cookie;
+use crate::stack::queue::{OrderedDataQueue, OutgoingDataQueue, UnorderedDataQueue};
+use crate::stack::recvtracker::RecvTracker;
+use crate::stack::settings::DEFAULT_SCTP_PARAMETERS;
+use crate::stack::Packet;
+use crate::stack::StackResources;
+use crate::stack::Timeout;
+use crate::util::buffer::Buffer;
+use crate::Message;
+use crate::UserMessage;
 
 mod retransmission;
 
@@ -835,7 +835,7 @@ impl Association {
 
         // Dispatch
         use self::AssociationState::*;
-        use packet::chunk::Chunk::*;
+        use crate::packet::chunk::Chunk::*;
         match (chunk, &self.state) {
             (&mut InitAck(ref init_ack), &CookieWait) => {
                 self.handle_init_ack(init_ack);

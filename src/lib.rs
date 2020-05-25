@@ -21,9 +21,9 @@ pub mod util;
 use std::collections::LinkedList;
 use std::fmt;
 
-use packet::chunk::DataChunk;
-use packet::{SSN, TSN};
-use util::buffer::Buffer;
+use crate::packet::chunk::DataChunk;
+use crate::packet::{SSN, TSN};
+use crate::util::buffer::Buffer;
 
 /// A message in SCTP is the basic unit of data used by the upper-layer protocol, and is split over
 /// one or more DATA chunks for transmission.

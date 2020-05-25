@@ -14,8 +14,8 @@ use nom::{be_u16, be_u32, IResult};
 
 use self::chunk::*;
 use self::writer::{Result as WriterResult, Writer};
-use error::SctpError;
-use util::serial::Serial;
+use crate::error::SctpError;
+use crate::util::serial::Serial;
 
 pub type TSN = Serial<u32>;
 pub type SSN = Serial<u16>;
@@ -97,7 +97,7 @@ pub fn parse(packet_buffer: &[u8]) -> Result<SctpPacket, SctpError> {
         return Err(SctpError::InvalidPacket);
     }
 
-    if !::packet::checksum::verify(packet_buffer) {
+    if !crate::packet::checksum::verify(packet_buffer) {
         return Err(SctpError::BadChecksum);
     }
 
@@ -176,7 +176,7 @@ mod tests {
 
     #[test]
     fn test_packet_init() {
-        assert!(::packet::checksum::verify(PACKET_1_BYTES));
+        assert!(crate::packet::checksum::verify(PACKET_1_BYTES));
         let (remainder, packet) = sctp_packet(PACKET_1_BYTES).unwrap();
         assert_eq!(remainder.len(), 0);
         assert_eq!(packet.header.source_port, 48964);
@@ -209,7 +209,7 @@ mod tests {
 
     #[test]
     fn test_packet_cookie_ack_and_sack() {
-        assert!(::packet::checksum::verify(PACKET_2_BYTES));
+        assert!(crate::packet::checksum::verify(PACKET_2_BYTES));
         let (remainder, packet) = sctp_packet(PACKET_2_BYTES).unwrap();
         assert_eq!(remainder.len(), 0);
         assert_eq!(packet.header.source_port, 2020);
@@ -237,7 +237,7 @@ mod tests {
 
     #[test]
     fn test_init_trailing_padding() {
-        assert!(::packet::checksum::verify(PACKET_3_BYTES));
+        assert!(crate::packet::checksum::verify(PACKET_3_BYTES));
         let (remainder, packet) = sctp_packet(PACKET_3_BYTES).unwrap();
         assert_eq!(remainder.len(), 0);
         assert_eq!(packet.header.source_port, 5000);

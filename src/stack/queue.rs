@@ -21,12 +21,12 @@ use std::collections::LinkedList;
 use std::fmt::{self, Debug, Formatter};
 use std::marker::PhantomData;
 
-use error::{SctpError, SctpResult};
-use packet::chunk::DataChunk;
-use packet::{SSN, TSN};
-use util::buffer::BufferTracker;
-use util::serial::{Serial, SerialNumber};
-use Message;
+use crate::error::{SctpError, SctpResult};
+use crate::packet::chunk::DataChunk;
+use crate::packet::{SSN, TSN};
+use crate::util::buffer::BufferTracker;
+use crate::util::serial::{Serial, SerialNumber};
+use crate::Message;
 
 trait Numbered<T: SerialNumber>: Ord {
     fn number(&self) -> Serial<T>;
@@ -502,8 +502,8 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
     use std::collections::HashSet;
-    use util::buffer::Buffer;
-    use util::tests::*;
+    use crate::util::buffer::Buffer;
+    use crate::util::tests::*;
 
     #[test]
     fn test_inverse_order() {

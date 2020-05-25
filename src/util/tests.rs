@@ -88,12 +88,12 @@ pub fn u8_test_lists(max_length: usize) -> Vec<Vec<u8>> {
     list
 }
 
-use packet::chunk::DataChunk;
-use packet::{SSN, TSN};
+use crate::packet::chunk::DataChunk;
+use crate::packet::{SSN, TSN};
 use rand::{self, Rng, RngCore, XorShiftRng};
 use std::collections::HashMap;
-use util::buffer::Buffer;
-use Message;
+use crate::util::buffer::Buffer;
+use crate::Message;
 
 fn deterministic_rng() -> XorShiftRng {
     const SEED: [u8; 16] = [
