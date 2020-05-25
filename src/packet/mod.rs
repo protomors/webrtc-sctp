@@ -33,16 +33,16 @@ pub struct SctpPacket {
 
 impl fmt::Display for SctpPacket {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(writeln!(
+        writeln!(
             f,
             "src_port: {} dst_port: {} verification_tag: 0x{:x} chunks: {}",
             self.header.source_port,
             self.header.destination_port,
             self.header.verification_tag,
             self.chunks.len()
-        ));
+        )?;
         for chunk in &self.chunks {
-            try!(writeln!(f, "    {:?}", chunk));
+            writeln!(f, "    {:?}", chunk)?;
         }
         Ok(())
     }

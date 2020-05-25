@@ -159,7 +159,7 @@ impl ChunkWriter for DataChunk {
 
 impl fmt::Debug for DataChunk {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(writeln!(
+        writeln!(
             f,
             "DATA tsn={} stream_id={} ssn={} UBE={}{}{} ppi={}",
             self.tsn,
@@ -169,7 +169,7 @@ impl fmt::Debug for DataChunk {
             if self.beginning_fragment { '1' } else { '0' },
             if self.ending_fragment { '1' } else { '0' },
             self.payload_protocol_id
-        ));
+        )?;
         hexdump(f, "\t", &self.buffer)
     }
 }
@@ -228,7 +228,7 @@ impl ChunkWriter for InitChunk {
 
 impl fmt::Debug for InitChunk {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(
+        write!(
             f,
             "INIT initiate_tag={} a_rwnd={} num_outbound_streams={} \
              num_inbound_streams={}, initial_tsn={}",
@@ -237,9 +237,9 @@ impl fmt::Debug for InitChunk {
             self.num_outbound_streams,
             self.num_inbound_streams,
             self.initial_tsn
-        ));
+        )?;
         for p in &self.parameters {
-            try!(write!(f, "\n    {}", p));
+            write!(f, "\n    {}", p)?;
         }
         Ok(())
     }
@@ -295,7 +295,7 @@ impl ChunkWriter for InitAckChunk {
 
 impl fmt::Debug for InitAckChunk {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(
+        write!(
             f,
             "INIT ACK initiate_tag={} a_rwnd={} num_outbound_streams={} \
              num_inbound_streams={}, initial_tsn={}",
@@ -304,9 +304,9 @@ impl fmt::Debug for InitAckChunk {
             self.num_outbound_streams,
             self.num_inbound_streams,
             self.initial_tsn
-        ));
+        )?;
         for p in &self.parameters {
-            try!(write!(f, "\n    {}", p));
+            write!(f, "\n    {}", p)?;
         }
         Ok(())
     }

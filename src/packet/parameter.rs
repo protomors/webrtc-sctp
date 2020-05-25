@@ -116,7 +116,7 @@ impl fmt::Display for Parameter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Parameter::HeartbeatInfo(ref data) => {
-                try!(writeln!(f, "HeartbeatInfo"));
+                writeln!(f, "HeartbeatInfo")?;
                 hexdump(f, "\t\t", data.as_slice())
             }
             Parameter::IPv4Address(ref addr) => write!(f, "IPv4Address {}", addr),
@@ -137,7 +137,7 @@ impl fmt::Display for Parameter {
             Parameter::ECNCapable => write!(f, "ECNCapable"),
             Parameter::ForwardTSNSupported => write!(f, "ForwardTSNSupported"),
             Parameter::Unknown(ptype, ref data) => {
-                try!(writeln!(f, "Unknown{{type: {} (0x{:#04x})}}", ptype, ptype));
+                writeln!(f, "Unknown{{type: {} (0x{:#04x})}}", ptype, ptype)?;
                 hexdump(f, "\t", data.as_slice())
             }
         }
