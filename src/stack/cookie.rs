@@ -10,7 +10,8 @@ use std::io;
 use std::io::{Cursor, Read, Write};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::sync::{Arc, Mutex};
-use time;
+// TODO: Consider using Instant
+use std::time::SystemTime;
 
 use super::settings::DEFAULT_SCTP_PARAMETERS;
 use crate::packet::TSN;
@@ -49,10 +50,12 @@ impl Secret {
         let previous_key = [0u8; BLAKE2B_MAC_SIZE];
         rand::thread_rng().fill_bytes(&mut key);
 
-        const NANOSECONDS_IN_MILLISECOND: u64 = 1000000;
-        let generation_time = time::precise_time_ns();
-        let expiration_time = generation_time
-            + DEFAULT_SCTP_PARAMETERS.secret_key_regeneration_interval * NANOSECONDS_IN_MILLISECOND;
+        let generation_time = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        let expiration_time =
+            generation_time + DEFAULT_SCTP_PARAMETERS.secret_key_regeneration_interval;
 
         Secret {
             inner: Arc::new(Mutex::new(SecretInner {
@@ -70,12 +73,20 @@ impl Secret {
         inner.previous_key = inner.key;
         inner.has_previous = true;
         rand::thread_rng().fill_bytes(&mut inner.key);
-        inner.generation_time = time::precise_time_ns();
+        inner.generation_time = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
     }
 
     fn regenerate_if_needed(&self) {
         let inner = self.inner.lock().unwrap();
-        if time::precise_time_ns() >= inner.expiration_time {
+        if SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+            >= inner.expiration_time
+        {
             drop(inner);
             self.regenerate();
         }
@@ -167,7 +178,10 @@ impl Cookie {
         peer_num_inbound_streams: u16,
     ) -> Cookie {
         Cookie {
-            timestamp: time::precise_time_ns(),
+            timestamp: SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
             local_port,
             sctp_peer,
             llp_peer,

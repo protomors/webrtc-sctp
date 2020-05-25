@@ -23,7 +23,6 @@ tokio-io = "0.1"
 tokio-timer= "0.1"
 rand = "0.7"
 blake2 = "0.7"
-time = "0.1"
 byteorder = "1"
 log = "0.4"
 
