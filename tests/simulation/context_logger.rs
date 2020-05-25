@@ -3,13 +3,13 @@ use env_logger::fmt::Color;
 use futures::{Future, Poll};
 use std::cell::RefCell;
 use std::io::Write;
-use std::sync::{Once, ONCE_INIT};
+use std::sync::Once;
 
 thread_local! {
     pub static LOG_CONTEXT: RefCell<Option<usize>> = RefCell::new(None);
 }
 
-static INIT: Once = ONCE_INIT;
+static INIT: Once = Once::new();
 static COLORS: &[Color] = &[
     Color::Red,
     Color::Blue,
