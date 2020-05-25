@@ -10,7 +10,8 @@ mod writer;
 
 use std::fmt;
 
-use nom::{be_u16, be_u32, IResult};
+use nom::number::streaming::{be_u16, be_u32};
+use nom::IResult;
 
 use self::chunk::*;
 use self::writer::{Result as WriterResult, Writer};

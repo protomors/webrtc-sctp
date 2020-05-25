@@ -14,7 +14,7 @@ edition = "2018"
 path = "src/lib.rs"
 
 [dependencies]
-nom = "4"
+nom = "5"
 crc = "1"
 bytes = "0.5"
 futures = "0.1"

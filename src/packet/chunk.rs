@@ -2,7 +2,10 @@
 
 use std::fmt;
 
-use nom::{be_u16, be_u32, rest, IResult};
+use nom::number::streaming::{be_u16, be_u32};
+use nom::combinator::rest;
+use nom::IResult;
+use nom::error::ErrorKind;
 
 use crate::packet::error_cause::*;
 use crate::packet::parameter::{parse_parameter, Parameter};
@@ -104,7 +107,7 @@ impl fmt::Debug for Chunk {
 macro_rules! chunk (
     ($name:ident<$otype:ty>, $submac:ident!( $($args:tt)* )) => {
         #[allow(unused_variables)]
-        fn $name(flags: u8, i: &[u8]) -> ::nom::IResult<&[u8], $otype, u32> {
+        fn $name(flags: u8, i: &[u8]) -> ::nom::IResult<&[u8], $otype, (&[u8], ErrorKind)> {
             #[allow(unused_macros)]
             macro_rules! flags (
                 ($i:expr) => ({ Ok(($i, flags)) });

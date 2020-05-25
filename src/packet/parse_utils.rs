@@ -4,13 +4,14 @@
 /// to the provided dispatch function.  (A closure doesn't seem to work due to lifetime issues.)
 macro_rules! parse_tlv (
     ($i:expr, $dispatch_function:expr) => ({
-        use nom::{Err, ErrorKind, be_u16};
-        use nom::simple_errors::Context;
+        use nom::error::ErrorKind;
+        use nom::Err;
+        use nom::number::complete::be_u16;
         const TAG_LENGTH_HEADER_SIZE: usize = 4;
         let input = $i;
         if input.len() < TAG_LENGTH_HEADER_SIZE {
             // underrun TODO: real error
-            Err(Err::Error(Context::Code(input,ErrorKind::Custom(0))))
+            Err(Err::Error((input,ErrorKind::Count)))
         } else {
             // Parse tag
             match be_u16(input) {
@@ -23,7 +24,7 @@ macro_rules! parse_tlv (
                             // Validate length
                             if (length as usize) < TAG_LENGTH_HEADER_SIZE {
                                 // invalid length field TODO: real error
-                                Err(Err::Error(Context::Code(i,ErrorKind::Custom(0))))
+                                Err(Err::Error((i,ErrorKind::Count)))
                             } else {
                                 // Subtract the header size to get the value length
                                 let length = length as usize - TAG_LENGTH_HEADER_SIZE;
@@ -32,7 +33,7 @@ macro_rules! parse_tlv (
                                 let padded_length = length + padding;
                                 if length > i.len() {
                                     // not incomplete -- we should always have the full TLV
-                                    Err(Err::Error(Context::Code(i,ErrorKind::Custom(0))))
+                                    Err(Err::Error((i,ErrorKind::Count)))
                                 } else {
                                     // Split slices into the data which is part of this TLV
                                     // (not including padding) and the rest of the input stream
@@ -51,14 +52,14 @@ macro_rules! parse_tlv (
                                         Ok((i,value)) => {
                                             // The value data should be completely consumed
                                             if i.len() != 0 {
-                                                Err(Err::Error(Context::Code(i,ErrorKind::Custom(0))))
+                                                Err(Err::Error((i,ErrorKind::Count)))
                                             } else {
                                                 Ok((remaining_input, value))
                                             }
                                         },
                                         Err(Err::Incomplete(_)) => {
                                             // The TLV parser should always have complete data
-                                            Err(Err::Error(Context::Code(i,ErrorKind::Custom(0))))
+                                            Err(Err::Error((i,ErrorKind::Count)))
                                         },
                                         Err(e) => Err(e),
                                     }

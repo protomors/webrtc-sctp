@@ -2,8 +2,10 @@
 
 use std::fmt;
 
-use nom::simple_errors::Context;
-use nom::{be_u16, be_u32, rest, Err, ErrorKind, IResult};
+use nom::number::streaming::{be_u16, be_u32};
+use nom::combinator::rest;
+use nom::error::ErrorKind;
+use nom::{Err, IResult};
 
 use crate::packet::writer::{Result as WriterResult, Writer};
 use crate::util::{hexdump, shorthash};
@@ -209,15 +211,15 @@ fn parse_hostname(input: &[u8]) -> IResult<&[u8], String> {
     let length = input.len();
     if length < (HOSTNAME_MIN + 1) || length > (HOSTNAME_MAX + 1) {
         // TODO: BAD_HOSTNAME?
-        return Err(Err::Error(Context::Code(input, ErrorKind::Custom(0))));
+        return Err(Err::Error((input, ErrorKind::Count)));
     }
     if length > input.len() {
         // TODO: UNDERRUN
-        return Err(Err::Error(Context::Code(input, ErrorKind::Custom(0))));
+        return Err(Err::Error((input, ErrorKind::Count)));
     }
     if input[length - 1] != 0 {
         // Final octet must be a null terminator
-        return Err(Err::Error(Context::Code(input, ErrorKind::Custom(0))));
+        return Err(Err::Error((input, ErrorKind::Count)));
     }
     let mut s: String = String::with_capacity(length - 1);
     for octet in &input[..(length - 1)] {

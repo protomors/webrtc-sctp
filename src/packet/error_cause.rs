@@ -2,7 +2,9 @@
 
 use std::fmt;
 
-use nom::{be_u16, be_u32, rest, IResult};
+use nom::number::streaming::{be_u16, be_u32};
+use nom::combinator::rest;
+use nom::IResult;
 
 use crate::packet::parameter::{parse_parameter, Parameter};
 use crate::packet::writer::{Result as WriterResult, Writer};
