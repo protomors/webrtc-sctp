@@ -1,6 +1,7 @@
 use super::{FlyingPacket, PacketStream};
 use futures::{Async, Poll, Stream};
-use rand::{Rng, XorShiftRng};
+use rand::Rng;
+use rand_xorshift::XorShiftRng;
 
 pub trait Filter: Stream<Item = FlyingPacket, Error = ()> + Send {
     fn set_incoming_stream(&mut self, stream: PacketStream);

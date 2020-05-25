@@ -92,7 +92,8 @@ use crate::packet::chunk::DataChunk;
 use crate::packet::{SSN, TSN};
 use crate::util::buffer::Buffer;
 use crate::Message;
-use rand::{self, Rng, RngCore, XorShiftRng};
+use rand::{self, Rng, RngCore};
+use rand_xorshift::XorShiftRng;
 use std::collections::HashMap;
 
 fn deterministic_rng() -> XorShiftRng {
