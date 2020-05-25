@@ -205,7 +205,8 @@ impl RecvTracker {
                 } else {
                     None
                 }
-            }).collect();
+            })
+            .collect();
 
         // Prepare the list of duplicate TSNs to provide, clearing our tracked list.
         let mut duplicate_tsns = vec![];
@@ -233,8 +234,8 @@ impl Debug for RecvTracker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand;
     use crate::util::buffer::Buffer;
+    use rand;
 
     const INPUT_SIZE: usize = 8192;
     const REORDER_CHANCE: u32 = 15;

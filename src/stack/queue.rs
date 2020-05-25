@@ -342,7 +342,8 @@ impl Debug for UnorderedDataQueue {
                 c.0.tsn,
                 if c.0.beginning_fragment { '1' } else { '0' },
                 if c.0.ending_fragment { '1' } else { '0' },
-            ).unwrap();
+            )
+            .unwrap();
         }
         Ok(())
     }
@@ -500,10 +501,10 @@ impl OutgoingDataQueue {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
-    use std::collections::HashSet;
     use crate::util::buffer::Buffer;
     use crate::util::tests::*;
+    use std::collections::HashMap;
+    use std::collections::HashSet;
 
     #[test]
     fn test_inverse_order() {

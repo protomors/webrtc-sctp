@@ -79,10 +79,11 @@ impl FlyingPacket {
     fn is_data(&self) -> bool {
         let data = &self.llp.buffer[0..self.llp.length];
         let sctp_packet = ::webrtc_sctp::packet::parse(data).unwrap();
-        sctp_packet.chunks.len() == 1 && match &sctp_packet.chunks[0] {
-            &::webrtc_sctp::packet::chunk::Chunk::Data(_) => true,
-            _ => false,
-        }
+        sctp_packet.chunks.len() == 1
+            && match &sctp_packet.chunks[0] {
+                &::webrtc_sctp::packet::chunk::Chunk::Data(_) => true,
+                _ => false,
+            }
     }
 }
 
@@ -141,7 +142,8 @@ impl Simulation {
                 // Run the futures
                 let join_future = futures::future::join_all(sctp_futures);
                 core.run(join_future).unwrap();
-            }).unwrap();
+            })
+            .unwrap();
 
         // Retrieve the provisioned hosts
         let (hosts, unused_ip, pause_command_tx) = rx.recv().unwrap();

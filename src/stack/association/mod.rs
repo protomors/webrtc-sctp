@@ -590,7 +590,8 @@ impl Association {
                                 .try_send(command_tx_clone.clone())
                                 .unwrap();
                         }),
-                    )).unwrap()
+                    ))
+                    .unwrap()
             }
             None => unreachable!(),
         };
@@ -674,7 +675,8 @@ impl Association {
             .filter_map(|x| match x {
                 &Parameter::StateCookie(ref c) => Some(c),
                 _ => None,
-            }).next();
+            })
+            .next();
         let cookie = match *cookie {
             Some(c) => c,
             None => {

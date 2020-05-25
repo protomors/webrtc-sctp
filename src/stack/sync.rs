@@ -2,8 +2,8 @@
 //! the SCTP stack.
 
 use std::net::SocketAddr;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicUsize,Ordering};
 
 use futures::sync::mpsc;
 use futures::sync::oneshot;
@@ -11,7 +11,9 @@ use futures::{self, Future, Stream};
 
 use crate::error::{SctpError, SctpResult};
 use crate::packet::{SSN, TSN};
-use crate::stack::association::{AcceptQueueReceiver, AssociationCommand, AssociationCommandSender};
+use crate::stack::association::{
+    AcceptQueueReceiver, AssociationCommand, AssociationCommandSender,
+};
 use crate::stack::SctpCommand;
 use crate::stack::Timeout;
 use crate::UserMessage;

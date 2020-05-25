@@ -45,7 +45,8 @@ pub fn log_init() {
                 });
 
                 writeln!(buf, "{:5} {}", record.level(), style.value(record.args()))
-            }).init();
+            })
+            .init();
     });
 }
 

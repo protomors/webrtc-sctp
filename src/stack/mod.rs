@@ -122,9 +122,7 @@ impl SctpStack {
         // SctpPacket data structures into byte buffers.
         let outgoing_future = Box::new(
             outgoing_rx
-                .map(|packet| {
-                    packet_to_lower_layer(&packet)
-                })
+                .map(|packet| packet_to_lower_layer(&packet))
                 .map_err(|_| io::Error::new(io::ErrorKind::Other, "outgoing"))
                 .forward(lower_layer_sink)
                 .map(|_| ()),
@@ -264,10 +262,11 @@ impl SctpStack {
         packet: &Packet,
     ) -> Option<&'a mut Association> {
         fn is_init_packet(packet: &Packet) -> bool {
-            packet.sctp_packet.chunks.len() == 1 && match packet.sctp_packet.chunks[0] {
-                Chunk::Init(_) => true,
-                _ => false,
-            }
+            packet.sctp_packet.chunks.len() == 1
+                && match packet.sctp_packet.chunks[0] {
+                    Chunk::Init(_) => true,
+                    _ => false,
+                }
         }
 
         fn is_cookie_echo_packet(packet: &Packet) -> bool {
@@ -278,7 +277,8 @@ impl SctpStack {
                 .find(|chunk| match chunk {
                     &&Chunk::CookieEcho(_) => true,
                     _ => false,
-                }).is_some()
+                })
+                .is_some()
         }
 
         // Determine the SCTP peer, which may be different from the LLP peer.

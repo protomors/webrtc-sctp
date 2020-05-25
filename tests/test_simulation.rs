@@ -46,7 +46,8 @@ fn test_associate() {
         .connect(
             test_destination,
             Timeout::Some(Duration::from_millis(TIMEOUT_MS)),
-        ).unwrap();
+        )
+        .unwrap();
 }
 
 #[test]
@@ -63,7 +64,8 @@ fn test_shutdown() {
         .connect(
             test_destination,
             Timeout::Some(Duration::from_millis(TIMEOUT_MS)),
-        ).unwrap();
+        )
+        .unwrap();
 
     // Server: Accept connection.
     let mut server_assn = listener.accept();
@@ -91,7 +93,8 @@ fn test_data() {
         .connect(
             test_destination,
             Timeout::Some(Duration::from_millis(TIMEOUT_MS)),
-        ).unwrap();
+        )
+        .unwrap();
 
     // Server: Accept connection and say hello.
     let mut server_assn = listener.accept();
@@ -174,7 +177,8 @@ fn test_simultaneous_shutdown() {
         .connect(
             test_destination,
             Timeout::Some(Duration::from_millis(TIMEOUT_MS)),
-        ).unwrap();
+        )
+        .unwrap();
 
     // Server: Accept connection and say hello.
     let mut server_assn = listener.accept();
@@ -286,7 +290,8 @@ fn test_single_fragmented_message() {
         .connect(
             test_destination,
             Timeout::Some(Duration::from_millis(TIMEOUT_MS)),
-        ).unwrap();
+        )
+        .unwrap();
 
     // Server: Accept connection and send message.
     let mut server_assn = listener.accept();
@@ -318,7 +323,8 @@ fn test_many_fragmented_messages() {
         .connect(
             test_destination,
             Timeout::Some(Duration::from_millis(TIMEOUT_MS)),
-        ).unwrap();
+        )
+        .unwrap();
 
     // Server: Accept connection
     let mut server_assn = listener.accept();
@@ -379,7 +385,8 @@ fn test_many_associate_shutdown() {
             .connect(
                 test_destination,
                 Timeout::Some(Duration::from_millis(TIMEOUT_MS)),
-            ).unwrap();
+            )
+            .unwrap();
 
         // Server: Accept connection.
         let mut server_assn = listener.accept();
@@ -409,7 +416,8 @@ fn test_retransmit() {
         .connect(
             test_destination,
             Timeout::Some(Duration::from_millis(TIMEOUT_MS)),
-        ).unwrap();
+        )
+        .unwrap();
 
     // Set a timeout on the client
     client_assn
