@@ -1,10 +1,3 @@
-extern crate env_logger;
-extern crate futures;
-extern crate rand;
-extern crate tokio_core;
-extern crate tokio_timer;
-extern crate webrtc_sctp;
-
 use std::thread;
 use tokio_core::reactor::Core;
 

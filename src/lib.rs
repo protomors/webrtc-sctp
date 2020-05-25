@@ -1,15 +1,5 @@
-extern crate crc;
 #[macro_use]
 extern crate nom;
-extern crate blake2;
-extern crate byteorder;
-extern crate bytes;
-extern crate futures;
-extern crate rand;
-extern crate time;
-extern crate tokio_core;
-extern crate tokio_io;
-extern crate tokio_timer;
 #[macro_use]
 extern crate log;
 
