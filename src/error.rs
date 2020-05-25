@@ -1,4 +1,4 @@
-use std::error;
+use std::error::Error;
 use std::fmt;
 use std::io;
 
@@ -43,33 +43,8 @@ impl fmt::Display for SctpError {
     }
 }
 
-impl error::Error for SctpError {
-    /// Provide terse descriptions of the errors.
-    fn description(&self) -> &str {
-        // "The description should only be used for a simple message. It
-        // should not contain newlines or sentence-ending punctuation,
-        // to facilitate embedding in larger user-facing strings. For
-        // showing formatted error messages with more information see
-        // Display."
-        match *self {
-            SctpError::Io(ref e) => error::Error::description(e),
-            SctpError::ReadUnderrun => "A read underrun occured",
-            SctpError::InvalidPacket => "Invalid packet",
-            SctpError::BadChecksum => "Bad checksum",
-            SctpError::BadState => "Bad state",
-            SctpError::ExpectedBeginningFragment => {
-                "Expected beginning fragment; received middle or end."
-            }
-            SctpError::UnexpectedBeginningFragment => "Unexpected beginning fragment",
-            SctpError::UnexpectedSSN => "Unexpected SSN",
-            SctpError::SendQueueFull => "Send queue full",
-            SctpError::CommandQueueFull => "Command queue full",
-            SctpError::Closed => "Resource is closed",
-            SctpError::Timeout => "Timeout",
-        }
-    }
-    /// For errors which encapsulate another error, allow the caller to fetch the contained error.
-    fn cause(&self) -> Option<&error::Error> {
+impl Error for SctpError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             SctpError::Io(ref err) => Some(err),
             _ => None,
