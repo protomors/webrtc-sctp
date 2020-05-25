@@ -947,7 +947,7 @@ impl Association {
                 .collect()
         } else {
             // 2. Demux (ordered)
-            let mut stream = self.data.stream(data.stream_id);
+            let stream = self.data.stream(data.stream_id);
             // TODO: ABORT on error
             stream.ordered_queue.enqueue(data)?
         };

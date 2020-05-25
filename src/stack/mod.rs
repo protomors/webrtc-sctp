@@ -191,7 +191,7 @@ impl SctpStack {
             let port = MIN_EPHEMERAL + (self.next_ephemeral % NUM_EPHEMERAL);
 
             let mut found: bool = false;
-            for mut association in &self.associations {
+            for association in &self.associations {
                 if association.network.local_port == port {
                     found = true;
                     break;
@@ -220,7 +220,7 @@ impl SctpStack {
         sctp_peer: SocketAddr,
         local_port: u16,
     ) -> Option<&'a mut Association> {
-        for mut association in &mut self.associations {
+        for association in &mut self.associations {
             if association.network.sctp_peer == sctp_peer
                 && association.network.local_port == local_port
             {
@@ -231,7 +231,7 @@ impl SctpStack {
     }
 
     fn association_exists(&self, sctp_peer: SocketAddr, local_port: u16) -> bool {
-        for mut association in &self.associations {
+        for association in &self.associations {
             if association.network.sctp_peer == sctp_peer
                 && association.network.local_port == local_port
             {
@@ -245,7 +245,7 @@ impl SctpStack {
         &'a mut self,
         local_port: u16,
     ) -> Option<&'a mut Association> {
-        for mut association in &mut self.associations {
+        for association in &mut self.associations {
             match association.state {
                 AssociationState::Listen => {
                     if association.network.local_port == local_port {
@@ -344,7 +344,7 @@ impl Future for SctpStack {
         if let Ok(Async::Ready(Some(command))) = self.command_rx.poll() {
             use self::SctpCommand::*;
             match command {
-                Connect(mut destination, timeout, return_tx) => {
+                Connect(destination, timeout, return_tx) => {
                     // TODO: We shouldn't have to deal with LLP concerns here.  Some LLPs won't
                     // even have the concept of a destination.  For example, when DTLS is the lower
                     // layer, there is only us and the peer.  Should SctpStack be generic over an
