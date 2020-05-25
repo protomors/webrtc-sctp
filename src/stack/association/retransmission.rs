@@ -31,7 +31,7 @@
 
 use std::time::{Duration, Instant};
 
-use tokio_timer;
+use tokio_timer::{sleep, Delay};
 
 use super::Association;
 use crate::packet::chunk::{Chunk, GapAckBlock};
@@ -40,7 +40,7 @@ use crate::stack::settings::DEFAULT_SCTP_PARAMETERS;
 
 /// The retransmission state that will be embedded in every association.
 pub struct State {
-    pub timer: Option<tokio_timer::Sleep>,
+    pub timer: Option<Delay>,
     pub measurements: Measurements,
     pub tx_high_water_mark: TSN,
 }
@@ -88,7 +88,7 @@ impl Retransmission for Association {
 
         // R1) On any transmission, start the rtx timer if it is not already running.
         if self.rtx.timer.is_none() {
-            self.rtx.timer = Some(self.resources.timer.sleep(self.rtx.measurements.rto))
+            self.rtx.timer = Some(sleep(self.rtx.measurements.rto))
         }
     }
 
@@ -106,7 +106,7 @@ impl Retransmission for Association {
         } else if let Some(earliest_outstanding_tsn) = earliest_outstanding_tsn {
             // R3) If the earliest outstanding TSN is acknowledged, then restart the timer.
             if cumulative_tsn_ack >= earliest_outstanding_tsn {
-                self.rtx.timer = Some(self.resources.timer.sleep(self.rtx.measurements.rto));
+                self.rtx.timer = Some(sleep(self.rtx.measurements.rto));
             }
         }
     }
@@ -195,12 +195,7 @@ fn retransmit_immediate(association: &mut Association) {
         association.send_chunk(Chunk::Data(rtx_chunk));
 
         // E4) Restart timer
-        association.rtx.timer = Some(
-            association
-                .resources
-                .timer
-                .sleep(association.rtx.measurements.rto),
-        )
+        association.rtx.timer = Some(sleep(association.rtx.measurements.rto))
     }
 }
 

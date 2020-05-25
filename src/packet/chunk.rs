@@ -2,10 +2,10 @@
 
 use std::fmt;
 
-use nom::number::streaming::{be_u16, be_u32};
 use nom::combinator::rest;
-use nom::IResult;
 use nom::error::ErrorKind;
+use nom::number::streaming::{be_u16, be_u32};
+use nom::IResult;
 
 use crate::packet::error_cause::*;
 use crate::packet::parameter::{parse_parameter, Parameter};

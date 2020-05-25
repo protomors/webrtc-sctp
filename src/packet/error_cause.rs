@@ -2,8 +2,8 @@
 
 use std::fmt;
 
-use nom::number::streaming::{be_u16, be_u32};
 use nom::combinator::rest;
+use nom::number::streaming::{be_u16, be_u32};
 use nom::IResult;
 
 use crate::packet::parameter::{parse_parameter, Parameter};

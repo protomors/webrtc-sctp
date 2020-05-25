@@ -18,7 +18,7 @@ use futures::sync::oneshot;
 use futures::{self, Async, AsyncSink, Future, Poll, Sink, StartSend, Stream};
 use rand;
 use tokio_core::reactor::Handle;
-use tokio_timer;
+use tokio_timer::{sleep, Delay};
 
 use self::association::*;
 use self::cookie::Secret;
@@ -40,15 +40,11 @@ pub enum Timeout {
     Some(Duration),
 }
 impl Timeout {
-    fn timer(
-        &self,
-        timer: &tokio_timer::Timer,
-        default: Option<Duration>,
-    ) -> Option<tokio_timer::Sleep> {
+    fn timer(&self, default: Option<Duration>) -> Option<Delay> {
         match self {
             &Timeout::None => None,
-            &Timeout::Default => default.map(|d| timer.sleep(d)),
-            &Timeout::Some(duration) => Some(timer.sleep(duration)),
+            &Timeout::Default => default.map(|d| sleep(d)),
+            &Timeout::Some(duration) => Some(sleep(duration)),
         }
     }
     fn duration(&self, default: Option<Duration>) -> Option<Duration> {
@@ -64,7 +60,6 @@ impl Timeout {
 /// lightweight fashion.
 #[derive(Clone)]
 pub struct StackResources {
-    timer: tokio_timer::Timer,
     secret: Secret,
 }
 
@@ -115,7 +110,6 @@ impl SctpStack {
         let (outgoing_tx, outgoing_rx) = mpsc::unbounded::<Packet>();
         let llp_listen_address = lower_layer.address();
         let (lower_layer_sink, incoming_stream) = lower_layer.split();
-        let timer = tokio_timer::Timer::default();
         let secret = Secret::new();
 
         // Connect our outgoing mpsc stream to the lower layer sink, mapping
@@ -143,10 +137,7 @@ impl SctpStack {
         });
 
         SctpStack {
-            resources: StackResources {
-                timer: timer,
-                secret: secret,
-            },
+            resources: StackResources { secret: secret },
             started: false,
             command_tx,
             command_rx,

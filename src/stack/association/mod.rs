@@ -10,7 +10,7 @@ use std::fmt;
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::time::*;
-use tokio_timer;
+use tokio_timer::{sleep, Delay};
 
 use crate::error::{SctpError, SctpResult};
 use crate::packet::chunk::{
@@ -64,7 +64,7 @@ struct ListenState {
 struct ConnectState {
     return_tx: oneshot::Sender<SctpResult<mpsc::Sender<AssociationCommand>>>,
     cookie: Option<Vec<u8>>,
-    timer: Option<tokio_timer::Sleep>,
+    timer: Option<Delay>,
 }
 
 struct DataState {
@@ -128,13 +128,13 @@ pub struct Association {
     outgoing_packets: VecDeque<Packet>,
     command_tx: mpsc::Sender<AssociationCommand>,
     command_rx: mpsc::Receiver<AssociationCommand>,
-    t1: Option<tokio_timer::Sleep>,
-    t2: Option<tokio_timer::Sleep>,
-    t5: Option<tokio_timer::Sleep>,
+    t1: Option<Delay>,
+    t2: Option<Delay>,
+    t5: Option<Delay>,
     recv_timeout: Option<Duration>,
     send_timeout: Option<Duration>,
-    recv_timer: Option<tokio_timer::Sleep>,
-    send_timer: Option<tokio_timer::Sleep>,
+    recv_timer: Option<Delay>,
+    send_timer: Option<Delay>,
 
     //
     // SCTP packet header fields
@@ -221,25 +221,21 @@ pub enum AssociationCommand {
 impl Association {
     #[inline]
     #[allow(unused)]
-    fn timer(&self, duration: Duration) -> Option<tokio_timer::Sleep> {
-        Some(self.resources.timer.sleep(duration))
+    fn timer(&self, duration: Duration) -> Option<Delay> {
+        Some(sleep(duration))
     }
 
     #[inline]
-    fn timer_opt(&self, duration: Option<Duration>) -> Option<tokio_timer::Sleep> {
+    fn timer_opt(&self, duration: Option<Duration>) -> Option<Delay> {
         match duration {
-            Some(duration) => Some(self.resources.timer.sleep(duration)),
+            Some(duration) => Some(sleep(duration)),
             None => None,
         }
     }
 
     #[inline]
-    fn timer_ms(&self, milliseconds: u64) -> Option<tokio_timer::Sleep> {
-        Some(
-            self.resources
-                .timer
-                .sleep(Duration::from_millis(milliseconds)),
-        )
+    fn timer_ms(&self, milliseconds: u64) -> Option<Delay> {
+        Some(sleep(Duration::from_millis(milliseconds)))
     }
 
     fn state(&mut self, new_state: AssociationState) {
@@ -375,7 +371,7 @@ impl Association {
         next_send_tsn: TSN,
         timeout: Timeout,
     ) -> Association {
-        let timer = timeout.timer(&resources.timer, DEFAULT_CONNECT_TIMEOUT);
+        let timer = timeout.timer(DEFAULT_CONNECT_TIMEOUT);
         Self::instantiate(
             AssociationState::CookieWait,
             resources,
@@ -1223,14 +1219,12 @@ impl Association {
         // expires, and the ShutdownChunk (and possible SackChunk) re-sent.
         // TODO: Use actual RTO algorithm
         // TODO: Use correct timing
-        self.t2 = Some(
-            self.resources
-                .timer
-                .sleep(Duration::from_millis(DEFAULT_SCTP_PARAMETERS.rto_initial)),
-        );
+        self.t2 = Some(sleep(Duration::from_millis(
+            DEFAULT_SCTP_PARAMETERS.rto_initial,
+        )));
 
         // Start T5-shutdown-guard timer.  If this timer expires, abort.
-        self.t5 = Some(self.resources.timer.sleep(Duration::from_millis(
+        self.t5 = Some(sleep(Duration::from_millis(
             // If the 'T5-shutdown-guard' timer is used, it SHOULD be set to
             // the recommended value of 5 times 'RTO.Max'.
             5 * DEFAULT_SCTP_PARAMETERS.rto_max,
@@ -1251,11 +1245,9 @@ impl Association {
         // expires, and the ShutdownAckChunk re-sent.
         // TODO: Use actual RTO algorithm
         // TODO: Use correct timing
-        self.t2 = Some(
-            self.resources
-                .timer
-                .sleep(Duration::from_millis(DEFAULT_SCTP_PARAMETERS.rto_initial)),
-        );
+        self.t2 = Some(sleep(Duration::from_millis(
+            DEFAULT_SCTP_PARAMETERS.rto_initial,
+        )));
 
         // Transition
         self.state(AssociationState::ShutdownAckSent);
