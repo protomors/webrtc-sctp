@@ -10,7 +10,7 @@ use std::fmt;
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::time::*;
-use tokio_timer::{sleep, Delay};
+use tokio::timer::Delay;
 
 use crate::error::{SctpError, SctpResult};
 use crate::packet::chunk::{
@@ -222,20 +222,22 @@ impl Association {
     #[inline]
     #[allow(unused)]
     fn timer(&self, duration: Duration) -> Option<Delay> {
-        Some(sleep(duration))
+        Some(Delay::new(Instant::now() + duration))
     }
 
     #[inline]
     fn timer_opt(&self, duration: Option<Duration>) -> Option<Delay> {
         match duration {
-            Some(duration) => Some(sleep(duration)),
+            Some(duration) => Some(Delay::new(Instant::now() + duration)),
             None => None,
         }
     }
 
     #[inline]
     fn timer_ms(&self, milliseconds: u64) -> Option<Delay> {
-        Some(sleep(Duration::from_millis(milliseconds)))
+        Some(Delay::new(
+            Instant::now() + Duration::from_millis(milliseconds),
+        ))
     }
 
     fn state(&mut self, new_state: AssociationState) {
@@ -1219,16 +1221,19 @@ impl Association {
         // expires, and the ShutdownChunk (and possible SackChunk) re-sent.
         // TODO: Use actual RTO algorithm
         // TODO: Use correct timing
-        self.t2 = Some(sleep(Duration::from_millis(
-            DEFAULT_SCTP_PARAMETERS.rto_initial,
-        )));
+        self.t2 = Some(Delay::new(
+            Instant::now() + Duration::from_millis(DEFAULT_SCTP_PARAMETERS.rto_initial),
+        ));
 
         // Start T5-shutdown-guard timer.  If this timer expires, abort.
-        self.t5 = Some(sleep(Duration::from_millis(
-            // If the 'T5-shutdown-guard' timer is used, it SHOULD be set to
-            // the recommended value of 5 times 'RTO.Max'.
-            5 * DEFAULT_SCTP_PARAMETERS.rto_max,
-        )));
+        self.t5 = Some(Delay::new(
+            Instant::now()
+                + Duration::from_millis(
+                    // If the 'T5-shutdown-guard' timer is used, it SHOULD be set to
+                    // the recommended value of 5 times 'RTO.Max'.
+                    5 * DEFAULT_SCTP_PARAMETERS.rto_max,
+                ),
+        ));
 
         // Transition
         self.state(AssociationState::ShutdownSent);
@@ -1245,9 +1250,9 @@ impl Association {
         // expires, and the ShutdownAckChunk re-sent.
         // TODO: Use actual RTO algorithm
         // TODO: Use correct timing
-        self.t2 = Some(sleep(Duration::from_millis(
-            DEFAULT_SCTP_PARAMETERS.rto_initial,
-        )));
+        self.t2 = Some(Delay::new(
+            Instant::now() + Duration::from_millis(DEFAULT_SCTP_PARAMETERS.rto_initial),
+        ));
 
         // Transition
         self.state(AssociationState::ShutdownAckSent);

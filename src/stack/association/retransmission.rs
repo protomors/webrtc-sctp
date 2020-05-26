@@ -31,7 +31,7 @@
 
 use std::time::{Duration, Instant};
 
-use tokio_timer::{sleep, Delay};
+use tokio::timer::Delay;
 
 use super::Association;
 use crate::packet::chunk::{Chunk, GapAckBlock};
@@ -88,7 +88,7 @@ impl Retransmission for Association {
 
         // R1) On any transmission, start the rtx timer if it is not already running.
         if self.rtx.timer.is_none() {
-            self.rtx.timer = Some(sleep(self.rtx.measurements.rto))
+            self.rtx.timer = Some(Delay::new(Instant::now() + self.rtx.measurements.rto))
         }
     }
 
@@ -106,7 +106,7 @@ impl Retransmission for Association {
         } else if let Some(earliest_outstanding_tsn) = earliest_outstanding_tsn {
             // R3) If the earliest outstanding TSN is acknowledged, then restart the timer.
             if cumulative_tsn_ack >= earliest_outstanding_tsn {
-                self.rtx.timer = Some(sleep(self.rtx.measurements.rto));
+                self.rtx.timer = Some(Delay::new(Instant::now() + self.rtx.measurements.rto));
             }
         }
     }
@@ -195,7 +195,9 @@ fn retransmit_immediate(association: &mut Association) {
         association.send_chunk(Chunk::Data(rtx_chunk));
 
         // E4) Restart timer
-        association.rtx.timer = Some(sleep(association.rtx.measurements.rto))
+        association.rtx.timer = Some(Delay::new(
+            Instant::now() + association.rtx.measurements.rto,
+        ))
     }
 }
 

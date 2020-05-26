@@ -11,13 +11,13 @@ pub mod sync;
 
 use std::io;
 use std::net::SocketAddr;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use futures::sync::mpsc;
 use futures::sync::oneshot;
 use futures::{self, Async, AsyncSink, Future, Poll, Sink, StartSend, Stream};
 use rand;
-use tokio_timer::{sleep, Delay};
+use tokio::timer::Delay;
 
 use self::association::*;
 use self::cookie::Secret;
@@ -42,8 +42,8 @@ impl Timeout {
     fn timer(&self, default: Option<Duration>) -> Option<Delay> {
         match self {
             &Timeout::None => None,
-            &Timeout::Default => default.map(|d| sleep(d)),
-            &Timeout::Some(duration) => Some(sleep(duration)),
+            &Timeout::Default => default.map(|d| Delay::new(Instant::now() + d)),
+            &Timeout::Some(duration) => Some(Delay::new(Instant::now() + duration)),
         }
     }
     fn duration(&self, default: Option<Duration>) -> Option<Duration> {
