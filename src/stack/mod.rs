@@ -17,7 +17,6 @@ use futures::sync::mpsc;
 use futures::sync::oneshot;
 use futures::{self, Async, AsyncSink, Future, Poll, Sink, StartSend, Stream};
 use rand;
-use tokio_core::reactor::Handle;
 use tokio_timer::{sleep, Delay};
 
 use self::association::*;
@@ -98,8 +97,8 @@ pub enum SctpCommand {
 pub type SctpCommandTx = mpsc::Sender<SctpCommand>;
 
 impl SctpStack {
-    pub fn new(tokio: Handle) -> SctpStack {
-        let lower_layer = UdpLowerLayer::new(tokio);
+    pub fn new() -> SctpStack {
+        let lower_layer = UdpLowerLayer::new();
         Self::new_with_lower_layer(Box::new(lower_layer))
     }
 

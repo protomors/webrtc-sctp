@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::thread::{self, JoinHandle};
-use tokio_core::reactor::Core;
+use tokio::runtime::current_thread::Runtime;
 
 use self::filter::*;
 use webrtc_sctp::stack::lowerlayer::{LowerLayer, LowerLayerPacket, LowerLayerProtocol};
@@ -108,19 +108,19 @@ impl Simulation {
             .name(SIMULATION_THREAD_NAME.to_string())
             .spawn(move || {
                 // Create the tokio event loop
-                let mut core = Core::new().unwrap();
+                let mut rt = Runtime::new().unwrap();
 
                 // Spawn a "Pause" future that allows the simulation to be paused by
                 // blocking event loop progress.
                 let (pause_future, pause_command_tx) = Pause::new();
-                core.handle().spawn(pause_future);
+                rt.spawn(pause_future);
 
                 // Spawn the router future
                 let (mut router, lower_layers, unused_ip) = Router::new(num_hosts);
                 for filter in filters {
                     router.add_filter(filter);
                 }
-                core.handle().spawn(router);
+                rt.spawn(router);
 
                 let mut hosts = vec![];
                 let mut sctp_futures = vec![];
@@ -141,7 +141,7 @@ impl Simulation {
 
                 // Run the futures
                 let join_future = futures::future::join_all(sctp_futures);
-                core.run(join_future).unwrap();
+                rt.block_on(join_future).unwrap();
             })
             .unwrap();
 

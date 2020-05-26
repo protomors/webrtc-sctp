@@ -5,8 +5,7 @@
 use futures::{Async, AsyncSink, Poll, Sink, StartSend, Stream};
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use tokio_core::net::UdpSocket;
-use tokio_core::reactor::Handle;
+use tokio::net::UdpSocket;
 
 use super::Packet;
 
@@ -61,11 +60,11 @@ impl UdpLowerLayer {
     // TODO: Get rid of this..
     pub const SCTP_UDP_TUNNELING_PORT_OUTGOING: u16 = 9900;
 
-    pub fn new(tokio: Handle) -> UdpLowerLayer {
+    pub fn new() -> UdpLowerLayer {
         let localhost = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
         let address = SocketAddr::new(localhost, Self::SCTP_UDP_TUNNELING_PORT);
         // Open a UDP socket in non-blocking mode bound to IPv4 localhost port 9899.
-        let socket = UdpSocket::bind(&address, &tokio).unwrap();
+        let socket = UdpSocket::bind(&address).unwrap();
         UdpLowerLayer {
             socket: socket,
             address: address,

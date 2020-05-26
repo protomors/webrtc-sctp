@@ -1,5 +1,5 @@
 use std::thread;
-use tokio_core::reactor::Core;
+use tokio::runtime::current_thread::Runtime;
 
 use webrtc_sctp::error::SctpResult;
 use webrtc_sctp::stack::sync::SctpHandle;
@@ -34,21 +34,20 @@ fn main() {
     }
     env_logger::init();
     let (tx, rx) = std::sync::mpsc::channel::<SctpHandle>();
-
     // Run the tokio event loop
     thread::spawn(move || {
         // Create the tokio event loop
-        let mut core = Core::new().unwrap();
+        let mut rt = Runtime::new().unwrap();
 
         // Create the SctpStack future
-        let sctp_stack = SctpStack::new(core.handle());
+        let sctp_stack = SctpStack::new();
 
         // Supply a handle to the main thread
         let handle = sctp_stack.handle();
         tx.send(handle).unwrap();
 
         // Run the future
-        core.run(sctp_stack).unwrap();
+        rt.block_on(sctp_stack).unwrap();
     });
 
     // Retrieve the handle
