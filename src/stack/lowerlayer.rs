@@ -90,12 +90,13 @@ impl Stream for UdpLowerLayer {
         // member as needed, etc.  A LowerLayer is only created once for the lifetime of the stack,
         // so we shouldn't be afraid of some heap allocations here.
         let mut buffer: [u8; 1500] = [0; 1500];
-        match self.socket.recv_from(&mut buffer) {
-            Ok((nbytes, address)) => Ok(Async::Ready(Some(LowerLayerPacket {
+        match self.socket.poll_recv_from(&mut buffer) {
+            Ok(Async::Ready((nbytes, address))) => Ok(Async::Ready(Some(LowerLayerPacket {
                 buffer: buffer,
                 length: nbytes,
                 address: address,
             }))),
+            Ok(Async::NotReady) => Ok(Async::NotReady),
             Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => Ok(Async::NotReady),
             Err(e) => Err(e),
         }
@@ -112,9 +113,10 @@ impl Sink for UdpLowerLayer {
     ) -> StartSend<Self::SinkItem, Self::SinkError> {
         match self
             .socket
-            .send_to(&packet.buffer[0..packet.length], &packet.address)
+            .poll_send_to(&packet.buffer[0..packet.length], &packet.address)
         {
-            Ok(_) => Ok(AsyncSink::Ready),
+            Ok(Async::Ready(_)) => Ok(AsyncSink::Ready),
+            Ok(Async::NotReady) => Ok(AsyncSink::NotReady(packet)),
             Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => Ok(AsyncSink::NotReady(packet)),
             Err(e) => Err(e),
         }
