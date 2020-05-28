@@ -1,6 +1,4 @@
-use std::thread;
-use futures::prelude::*;
-use tokio::runtime::current_thread::Runtime;
+use futures::{lazy, prelude::*};
 
 use webrtc_sctp::error::SctpResult;
 use webrtc_sctp::stack::sync::SctpHandle;
@@ -34,32 +32,23 @@ fn main() {
         ::std::env::set_var("RUST_LOG", "webrtc_sctp=trace");
     }
     env_logger::init();
-    let (tx, rx) = std::sync::mpsc::channel::<SctpHandle>();
-    // Run the tokio event loop
-    thread::spawn(move || {
-        // Create the tokio event loop
-        let mut rt = Runtime::new().unwrap();
 
+    tokio::run(lazy(|| {
         // Create the SctpStack future
         let sctp_stack = SctpStack::new();
 
         // Supply a handle to the main thread
         let handle = sctp_stack.handle();
-        tx.send(handle).unwrap();
-
-        // Run the future
-        rt.spawn(sctp_stack.map_err(|e| {
+        tokio::spawn(sctp_stack.map_err(|e| {
             println!("error: {}", e);
         }));
-        rt.run().unwrap();
-    });
 
-    // Retrieve the handle
-    let handle = rx.recv().unwrap();
+        if let Err(e) = echo_server(handle) {
+            println!("error: {}", e);
+        }
 
-    if let Err(e) = echo_server(handle) {
-        println!("error: {}", e);
-    }
+        Ok(())
+    }));
 }
 
 fn echo_server(mut handle: SctpHandle) -> SctpResult<()> {
