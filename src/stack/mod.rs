@@ -72,8 +72,8 @@ pub struct SctpStack {
     stack_accept_rx: mpsc::Receiver<StackAcceptItem>,
     // TODO: this could be changed to a VecDeque.
     outgoing_tx: mpsc::UnboundedSender<Packet>,
-    outgoing_future: Box<dyn Future<Item = (), Error = io::Error>>,
-    incoming_stream: Box<dyn Stream<Item = Packet, Error = io::Error>>,
+    outgoing_future: Box<dyn Future<Item = (), Error = io::Error> + Send>,
+    incoming_stream: Box<dyn Stream<Item = Packet, Error = io::Error> + Send>,
     incoming_packet: Option<Packet>,
     associations: Vec<Association>,
     llp_listen_address: SocketAddr,

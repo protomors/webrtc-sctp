@@ -38,7 +38,7 @@ pub fn packet_to_lower_layer(packet: &Packet) -> LowerLayerPacket {
     llp_packet
 }
 
-pub trait LowerLayerProtocol: Stream + Sink {
+pub trait LowerLayerProtocol: Stream + Sink + Send {
     fn address(&self) -> SocketAddr;
 }
 pub type LowerLayer = dyn LowerLayerProtocol<

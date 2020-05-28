@@ -1,4 +1,5 @@
 use std::thread;
+use futures::prelude::*;
 use tokio::runtime::current_thread::Runtime;
 
 use webrtc_sctp::error::SctpResult;
@@ -47,7 +48,10 @@ fn main() {
         tx.send(handle).unwrap();
 
         // Run the future
-        rt.block_on(sctp_stack).unwrap();
+        rt.spawn(sctp_stack.map_err(|e| {
+            println!("error: {}", e);
+        }));
+        rt.run().unwrap();
     });
 
     // Retrieve the handle

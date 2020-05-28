@@ -204,7 +204,7 @@ const DEFAULT_CONNECT_TIMEOUT: Option<Duration> = None;
 const DEFAULT_RECV_TIMEOUT: Option<Duration> = None;
 const DEFAULT_SEND_TIMEOUT: Option<Duration> = None;
 
-pub type StackAcceptItem = (Association, Box<dyn FnMut() -> ()>);
+pub type StackAcceptItem = (Association, Box<dyn FnMut() -> () + Send>);
 pub type AssociationCommandSender = mpsc::Sender<AssociationCommand>;
 pub type AcceptQueueReceiver = mpsc::Receiver<AssociationCommandSender>;
 
