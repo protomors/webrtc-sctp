@@ -6,14 +6,12 @@ use futures::{Async, AsyncSink, Poll, Sink, StartSend, Stream};
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use tokio::net::UdpSocket;
+use bytes::{BytesMut, BufMut};
 
 use super::Packet;
 
 pub struct LowerLayerPacket {
-    // TODO: Some sort of arena for packet buffers?
-    // TODO: Don't hard-code 1500; at least use a constant until we implement proper Path MTU
-    // discovery.
-    pub buffer: [u8; 1500],
+    pub buffer: BytesMut,
     pub length: usize,
     pub address: SocketAddr,
     // TODO: LLP-specific parameters, e.g. UDP encaps destination port?
@@ -24,18 +22,13 @@ pub struct LowerLayerPacket {
 pub fn packet_to_lower_layer(packet: &Packet) -> LowerLayerPacket {
     let destination = packet.llp_address;
     let rendered = packet.sctp_packet.write().unwrap();
-    let mut llp_packet = LowerLayerPacket {
-        // TODO: Don't hard-code 1500; at least use a constant until we implement proper Path MTU
-        // discovery.
-        buffer: [0u8; 1500],
+    let mut bytes = BytesMut::with_capacity(rendered.len());
+    bytes.put_slice(&rendered);
+    LowerLayerPacket {
+        buffer: bytes,
         length: rendered.len(),
         address: destination,
-    };
-    // TODO: Surely this could be better.
-    for i in 0..rendered.len() {
-        llp_packet.buffer[i] = rendered[i];
     }
-    llp_packet
 }
 
 pub trait LowerLayerProtocol: Stream + Sink + Send {
@@ -91,11 +84,15 @@ impl Stream for UdpLowerLayer {
         // so we shouldn't be afraid of some heap allocations here.
         let mut buffer: [u8; 1500] = [0; 1500];
         match self.socket.poll_recv_from(&mut buffer) {
-            Ok(Async::Ready((nbytes, address))) => Ok(Async::Ready(Some(LowerLayerPacket {
-                buffer: buffer,
+            Ok(Async::Ready((nbytes, address))) => { 
+                let mut bytes = BytesMut::with_capacity(nbytes);
+                bytes.put_slice(&buffer[..nbytes]);
+                Ok(Async::Ready(Some(LowerLayerPacket {
+                buffer: bytes,
                 length: nbytes,
                 address: address,
-            }))),
+            })))
+        },
             Ok(Async::NotReady) => Ok(Async::NotReady),
             Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => Ok(Async::NotReady),
             Err(e) => Err(e),
