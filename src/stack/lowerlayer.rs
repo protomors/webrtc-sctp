@@ -6,12 +6,12 @@ use futures::{Async, AsyncSink, Poll, Sink, StartSend, Stream};
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use tokio::net::UdpSocket;
-use bytes::{BytesMut, BufMut};
+use bytes::{Bytes, BytesMut, BufMut};
 
 use super::Packet;
 
 pub struct LowerLayerPacket {
-    pub buffer: BytesMut,
+    pub buffer: Bytes,
     pub address: SocketAddr,
     // TODO: LLP-specific parameters, e.g. UDP encaps destination port?
     // (Instead of SocketAddr containing the port, which shouldn't be a concern at this layer.)
@@ -21,10 +21,8 @@ pub struct LowerLayerPacket {
 pub fn packet_to_lower_layer(packet: &Packet) -> LowerLayerPacket {
     let destination = packet.llp_address;
     let rendered = packet.sctp_packet.write().unwrap();
-    let mut bytes = BytesMut::with_capacity(rendered.len());
-    bytes.put_slice(&rendered);
     LowerLayerPacket {
-        buffer: bytes,
+        buffer: Bytes::from(rendered),
         address: destination,
     }
 }
@@ -86,7 +84,7 @@ impl Stream for UdpLowerLayer {
                 let mut bytes = BytesMut::with_capacity(nbytes);
                 bytes.put_slice(&buffer[..nbytes]);
                 Ok(Async::Ready(Some(LowerLayerPacket {
-                buffer: bytes,
+                buffer: bytes.freeze(),
                 address: address,
             })))
         },
