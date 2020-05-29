@@ -77,7 +77,7 @@ impl FlyingPacket {
     }
 
     fn is_data(&self) -> bool {
-        let data = &self.llp.buffer[0..self.llp.length];
+        let data = &self.llp.buffer;
         let sctp_packet = ::webrtc_sctp::packet::parse(data).unwrap();
         sctp_packet.chunks.len() == 1
             && match &sctp_packet.chunks[0] {

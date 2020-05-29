@@ -123,7 +123,7 @@ impl SctpStack {
 
         // Connect our incoming LLP stream to SCTP packet parsing
         let incoming_stream = incoming_stream.filter_map(|llp_packet| {
-            match packet::parse(&llp_packet.buffer[0..llp_packet.length]) {
+            match packet::parse(&llp_packet.buffer) {
                 Ok(p) => Some(Packet {
                     sctp_packet: p,
                     llp_address: llp_packet.address,

@@ -12,7 +12,6 @@ use super::Packet;
 
 pub struct LowerLayerPacket {
     pub buffer: BytesMut,
-    pub length: usize,
     pub address: SocketAddr,
     // TODO: LLP-specific parameters, e.g. UDP encaps destination port?
     // (Instead of SocketAddr containing the port, which shouldn't be a concern at this layer.)
@@ -26,7 +25,6 @@ pub fn packet_to_lower_layer(packet: &Packet) -> LowerLayerPacket {
     bytes.put_slice(&rendered);
     LowerLayerPacket {
         buffer: bytes,
-        length: rendered.len(),
         address: destination,
     }
 }
@@ -89,7 +87,6 @@ impl Stream for UdpLowerLayer {
                 bytes.put_slice(&buffer[..nbytes]);
                 Ok(Async::Ready(Some(LowerLayerPacket {
                 buffer: bytes,
-                length: nbytes,
                 address: address,
             })))
         },
@@ -110,7 +107,7 @@ impl Sink for UdpLowerLayer {
     ) -> StartSend<Self::SinkItem, Self::SinkError> {
         match self
             .socket
-            .poll_send_to(&packet.buffer[0..packet.length], &packet.address)
+            .poll_send_to(&packet.buffer, &packet.address)
         {
             Ok(Async::Ready(_)) => Ok(AsyncSink::Ready),
             Ok(Async::NotReady) => Ok(AsyncSink::NotReady(packet)),
