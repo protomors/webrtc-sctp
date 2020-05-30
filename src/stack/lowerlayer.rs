@@ -2,11 +2,11 @@
 //! an LLP is convenient for testing interoperability with libusrsctp, although for WebRTC data
 //! channels the lower layer protocol will be DTLS.
 
+use bytes::{BufMut, Bytes, BytesMut};
 use futures::{Async, AsyncSink, Poll, Sink, StartSend, Stream};
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use tokio::net::UdpSocket;
-use bytes::{Bytes, BytesMut, BufMut};
 
 use super::Packet;
 
@@ -80,14 +80,14 @@ impl Stream for UdpLowerLayer {
         // so we shouldn't be afraid of some heap allocations here.
         let mut buffer: [u8; 1500] = [0; 1500];
         match self.socket.poll_recv_from(&mut buffer) {
-            Ok(Async::Ready((nbytes, address))) => { 
+            Ok(Async::Ready((nbytes, address))) => {
                 let mut bytes = BytesMut::with_capacity(nbytes);
                 bytes.put_slice(&buffer[..nbytes]);
                 Ok(Async::Ready(Some(LowerLayerPacket {
-                buffer: bytes.freeze(),
-                address: address,
-            })))
-        },
+                    buffer: bytes.freeze(),
+                    address: address,
+                })))
+            }
             Ok(Async::NotReady) => Ok(Async::NotReady),
             Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => Ok(Async::NotReady),
             Err(e) => Err(e),
@@ -103,10 +103,7 @@ impl Sink for UdpLowerLayer {
         &mut self,
         packet: LowerLayerPacket,
     ) -> StartSend<Self::SinkItem, Self::SinkError> {
-        match self
-            .socket
-            .poll_send_to(&packet.buffer, &packet.address)
-        {
+        match self.socket.poll_send_to(&packet.buffer, &packet.address) {
             Ok(Async::Ready(_)) => Ok(AsyncSink::Ready),
             Ok(Async::NotReady) => Ok(AsyncSink::NotReady(packet)),
             Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => Ok(AsyncSink::NotReady(packet)),

@@ -1,7 +1,7 @@
 //! Functions related to SCTP checksums
 
-use crc::{crc32, Hasher32};
 use byteorder::{ByteOrder, LittleEndian};
+use crc::{crc32, Hasher32};
 
 const CHECKSUM_START_OFFSET: usize = 8;
 const CHECKSUM_END_OFFSET: usize = 12;
@@ -40,7 +40,10 @@ pub fn write(packet: &mut [u8]) {
     let checksum = compute(packet);
 
     // Write the checksum field as little endian
-    LittleEndian::write_u32(&mut packet[CHECKSUM_START_OFFSET..CHECKSUM_END_OFFSET], checksum);
+    LittleEndian::write_u32(
+        &mut packet[CHECKSUM_START_OFFSET..CHECKSUM_END_OFFSET],
+        checksum,
+    );
 }
 
 #[cfg(test)]
