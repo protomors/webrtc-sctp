@@ -1,6 +1,6 @@
 //! Functions related to SCTP checksums
 
-use crc::crc32;
+use crc::{crc32, Hasher32};
 use byteorder::{ByteOrder, LittleEndian};
 
 const CHECKSUM_START_OFFSET: usize = 8;
@@ -17,17 +17,11 @@ fn read(packet: &[u8]) -> u32 {
 
 fn compute(packet: &[u8]) -> u32 {
     // Calculate a checksum as if the checksum field was zeroed.
-    let checksum: u32 = crc32::update(
-        0,
-        &crc32::CASTAGNOLI_TABLE,
-        &packet[0..CHECKSUM_START_OFFSET],
-    );
-    let checksum: u32 = crc32::update(checksum, &crc32::CASTAGNOLI_TABLE, ZERO_CHECKSUM);
-    crc32::update(
-        checksum,
-        &crc32::CASTAGNOLI_TABLE,
-        &packet[CHECKSUM_END_OFFSET..],
-    )
+    let mut crc = crc32::Digest::new(crc32::CASTAGNOLI);
+    crc.write(&packet[0..CHECKSUM_START_OFFSET]);
+    crc.write(ZERO_CHECKSUM);
+    crc.write(&packet[CHECKSUM_END_OFFSET..]);
+    crc.sum32()
 }
 
 pub fn verify(packet: &[u8]) -> bool {
