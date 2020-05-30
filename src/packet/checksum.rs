@@ -1,21 +1,18 @@
 //! Functions related to SCTP checksums
 
 use crc::crc32;
+use byteorder::{ByteOrder, LittleEndian};
 
 const CHECKSUM_START_OFFSET: usize = 8;
 const CHECKSUM_END_OFFSET: usize = 12;
 const ZERO_CHECKSUM: &[u8] = &[0u8, 0, 0, 0];
 
 fn read(packet: &[u8]) -> u32 {
-    // NOTE: Is the SCTP checksum really supposed to be little endian?
-    // Or is this an artifact of how the crc crate delivers the result?
-    // TODO: Verify on a big-endian system.
+    // Because https://tools.ietf.org/html/rfc3309 uses "mirrored" bit order for CRC calculation
+    // the byte order of resulting CRC is reversed on Big-Endian machines.
 
     // Read checksum as little endian
-    (packet[CHECKSUM_START_OFFSET + 3] as u32) << 24
-        | (packet[CHECKSUM_START_OFFSET + 2] as u32) << 16
-        | (packet[CHECKSUM_START_OFFSET + 1] as u32) << 8
-        | (packet[CHECKSUM_START_OFFSET + 0] as u32)
+    LittleEndian::read_u32(&packet[CHECKSUM_START_OFFSET..CHECKSUM_END_OFFSET])
 }
 
 fn compute(packet: &[u8]) -> u32 {
@@ -49,10 +46,7 @@ pub fn write(packet: &mut [u8]) {
     let checksum = compute(packet);
 
     // Write the checksum field as little endian
-    packet[CHECKSUM_START_OFFSET + 0] = (checksum & 0xFF) as u8;
-    packet[CHECKSUM_START_OFFSET + 1] = (checksum >> 8 & 0xFF) as u8;
-    packet[CHECKSUM_START_OFFSET + 2] = (checksum >> 16 & 0xFF) as u8;
-    packet[CHECKSUM_START_OFFSET + 3] = (checksum >> 24 & 0xFF) as u8;
+    LittleEndian::write_u32(&mut packet[CHECKSUM_START_OFFSET..CHECKSUM_END_OFFSET], checksum);
 }
 
 #[cfg(test)]
