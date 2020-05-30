@@ -2,7 +2,7 @@
 
 use futures::sync::mpsc;
 use futures::sync::oneshot;
-use futures::{self, Async, AsyncSink, Future, Poll, Sink, StartSend, Stream as FutureStream};
+use futures::{self, Async, AsyncSink, Future, Poll, Sink, StartSend, Stream};
 use rand;
 use std::collections::HashMap;
 use std::collections::VecDeque;
@@ -74,7 +74,7 @@ struct DataState {
     recv_tx: Option<oneshot::Sender<SctpResult<Option<UserMessage>>>>,
     recv_tracker: RecvTracker,
     next_send_tsn: TSN,
-    streams: HashMap<u16, Stream>,
+    streams: HashMap<u16, AssociationStream>,
     unordered_queue: UnorderedDataQueue,
     // A send that is pending on queue availability
     deferred_send: Option<(Message, oneshot::Sender<SctpResult<()>>)>,
@@ -94,10 +94,10 @@ impl DataState {
             deferred_send: None,
         }
     }
-    fn stream(&mut self, stream_id: u16) -> &mut Stream {
+    fn stream(&mut self, stream_id: u16) -> &mut AssociationStream {
         use std::collections::hash_map::Entry::{Occupied, Vacant};
         let stream = match self.streams.entry(stream_id) {
-            Vacant(entry) => entry.insert(Stream::new(stream_id)),
+            Vacant(entry) => entry.insert(AssociationStream::new(stream_id)),
             Occupied(entry) => entry.into_mut(),
         };
         stream
@@ -178,16 +178,16 @@ impl fmt::Debug for Association {
     }
 }
 
-pub struct Stream {
+pub struct AssociationStream {
     #[allow(unused)]
     id: u16,
     next_ssn: SSN,
     ordered_queue: OrderedDataQueue,
 }
 
-impl Stream {
-    pub fn new(id: u16) -> Stream {
-        Stream {
+impl AssociationStream {
+    pub fn new(id: u16) -> AssociationStream {
+        AssociationStream {
             id,
             next_ssn: SSN::new(0),
             ordered_queue: OrderedDataQueue::new(),
@@ -1346,7 +1346,7 @@ impl Sink for Association {
     }
 }
 
-impl FutureStream for Association {
+impl Stream for Association {
     type Item = Packet;
     type Error = io::Error;
 
