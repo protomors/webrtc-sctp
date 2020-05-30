@@ -16,7 +16,7 @@ path = "src/lib.rs"
 [dependencies]
 nom = "5"
 crc = "1"
-bytes = "0.5"
+bytes = "0.4"
 futures = "0.1"
 tokio = "0.1"
 rand = "0.7"
